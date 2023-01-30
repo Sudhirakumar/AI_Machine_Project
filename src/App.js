@@ -1,25 +1,65 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Card, Input } from 'semantic-ui-react'
+export default function Posts() {
+    const [APIData, setAPIData] = useState([])
+    const [filteredResults, setFilteredResults] = useState([]);
+    const [searchInput, setSearchInput] = useState('');
+    useEffect(() => {
+        axios.get(`https://jsonplaceholder.typicode.com/albums`)
+            .then((response) => {
+                setAPIData(response.data);
+            })
+    }, [])
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+    const searchItems = (searchValue) => {
+        setSearchInput(searchValue)
+        if (searchInput === " ") {
+            const filteredData = APIData.filter((item) => {
+                return Object.values(item).join('').toLowerCase().includes(searchInput.toLowerCase())
+            })
+            setFilteredResults(filteredData)
+        }
+        else{
+            setFilteredResults(APIData)
+        }
+    }
 
-export default App;
+    return (
+        <div style={{ padding: 20 }}>
+            <Input icon='search'
+                placeholder='Search...'
+                onChange={(e) => searchItems(e.target.value)}
+            />
+            <Card.Group itemsPerRow={9} style={{ marginTop: 20 }}>
+                {searchInput.length > 1 ? (
+                    filteredResults.map((item) => {
+                        return (
+                            <Card>
+                                <Card.Content>
+                                    <Card.Header>{item.id}</Card.Header>
+                                    <Card.Description>
+                                        {item.title}
+                                    </Card.Description>
+                                </Card.Content>
+                            </Card>
+                        )
+                    })
+                ) : (
+                    APIData.map((item) => {
+                        return (
+                            <Card>
+                                <Card.Content>
+                                    <Card.Header>{item.name}</Card.Header>
+                                    <Card.Description>
+                                        {item.email}
+                                    </Card.Description>
+                                </Card.Content>
+                            </Card>
+                        )
+                    })
+                )}
+            </Card.Group>
+        </div>
+    )
+                  }
